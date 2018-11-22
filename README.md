@@ -232,127 +232,6 @@ value = "John Smith";
 string.validate(name, args, value, { validator, validationError });
 ```
 
-## Example: TypeORM Entity validation
-
-One idea that comes to mind is to wrap a TypeORM `@Entity` class with validation for each field by decorating with a `validate` method, similar to [class-validator](https://github.com/typestack/class-validator).
-
-```js
-@Entity
-class Person {
-  name: string;
-}
-```
-
-Generate the entities metadata via [graphGenTypeorm](https://github.com/jjwtay/graphGenTypeorm)
-
-Then using the `field.directives` of `@constraints`
-
-```js
-  const columns = getColumns(type);
-  return {
-    name: type.directives.Entity.name || name,
-    columns: Object.keys(columns).reduce((columns, fieldName) => {
-      const field = type.fields[fieldName];
-      return {
-        ...columns,
-        [fieldName]: {
-          ...field.directives,
-          primary: isPrimary(fieldName, type),
-          // ...
-        }
-      }
-    }
-  }
-```
-
-Then [Generate entity classes via connection entities metadata](https://github.com/typeorm/typeorm/issues/3141)
-
-See: [Entity configuration via JSON Schema](https://github.com/typeorm/typeorm/issues/1818)
-
-```js
-import { Entity } from "typeorm";
-const deepmerge = require("deepmerge");
-
-const identity = (value: any) => value;
-
-import { mapper, decorators } from "graphql-constraint-directive";
-
-import * as classDecorators from "class-validator/build/decorators";
-
-const decorators = {
-  ...decorators,
-  ...classDecorators
-};
-
-const decorate = (entityClazz, propertiesMap, entityName) => {
-  const entityField = entityClazz[name];
-  const propNames = Object.keys(propertiesMap);
-  propNames.map(propName => {
-    const propertyMap = propertiesMap[propName];
-    const decoratorMap = mapper.mapToClassValidators(
-      propertyMap.directives.constraints
-    );
-    const decoratorKeys = Object.keys(decoratorMap);
-    decoratorKeys.map(decName => {
-      const decorateArgs = decoratorMap[decName];
-      const decorator = decorators[decName];
-      const decorate = decorator(...decorateArgs);
-      decorate(entityField, propName);
-    });
-  });
-};
-
-function buildEntityClasses(
-  connection: Connection,
-  entityStore = {},
-  decorate: Function = identity,
-  opts = {}
-) {
-  const merge = opts.merge || deepmerge;
-  const entityMetaDatas: any[] = connection.entityMetaDatas.reduce(
-    (acc, metaData) => {
-      const { targetName } = metaData;
-      // targetName is the entity (class) name
-      // merge metadata for entity
-      acc[targetName] = merge({
-        ...(acc[targetName] || {}),
-        ...metaData
-      });
-    },
-    {}
-  );
-
-  const entityNames = Object.keys(entityMetaDatas);
-
-  return entityNames.reduce((acc, entityName) => {
-    const metaData = entityMetaDatas[entityName];
-    const { propertiesMap } = metaData;
-    // create blank @Entity decorated class
-    const entityClazz = Entity(class {});
-    // decorate entity class further and add class to map
-    acc[entityName] = decorate(entityClazz, propertiesMap, entityName);
-    return acc;
-  }, entityStore);
-}
-```
-
-And pass a custom `decorator` function which uses the `directives` entry of each field metadata to add validation logic for that field (such as by storing metadata internally on class in `$validationMetadata`), then finally add a `validate()` function for the entire class which iterates through the `validationMetadata`, examines the field value of each and calls the validator with metadata and field value.
-
-The above functionality is available as:
-
-```js
-import { buildEntityClasses } from "graphql-constraint-directive/typeorm";
-
-// ...
-let postRepository = connection.getRepository < Post > "Post";
-
-let post = new Post();
-post.title = "A new Post";
-post.text = "bla bla bla";
-
-await postRepository.save(post);
-```
-
 ## Validating Complex types
 
 ### Object
@@ -362,12 +241,12 @@ Validate:
 - Two fields must have same value (password, confirmedPassword) ie. `same`
 - When one field is set to sth, another field can only have specific set of values (ie. `when`)
 
-We can use `Yup` for full object validation
+We could use `yup` or `class-validator` for full object validation
 
 When visiting an object, we could keep perhaps track of the fields contained within.
 Then we continually check off each field being visited, setting parsed value on `fieldNameValueMap` . When all fields for the object have been "checked off", we call a callback to do full object validation on all parsed values collected.
 
-Example: Yup object validation
+### Example: Yup object validation
 
 ```js
 visitInputObject(object) {
@@ -407,7 +286,8 @@ class ObjectValidator {
 
 For it to work "for real", we need to push each such validator on a stack so that each field uses the one at the top of the stack. Then when done validating, remove it from the stack...
 
-Pretty complicated, but should be possible!
+Alternatively, use the `ObjectValueNode` when parsing values in scalars as described below.
+Shouldn't have to be so complicated!
 
 ### Lists
 
