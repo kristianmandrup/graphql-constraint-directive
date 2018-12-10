@@ -1,21 +1,27 @@
-# graphql-constraint-directive
+# GraphQL constraint directive ^+^
 
-[![Build Status](https://api.travis-ci.org/confuser/graphql-constraint-directive.svg?branch=master)](https://travis-ci.org/confuser/graphql-constraint-directive)
-[![Coverage Status](https://coveralls.io/repos/github/confuser/graphql-constraint-directive/badge.svg?branch=master)](https://coveralls.io/github/confuser/graphql-constraint-directive?branch=master)
-[![Known Vulnerabilities](https://snyk.io/test/github/confuser/graphql-constraint-directive/badge.svg?targetFile=package.json)](https://snyk.io/test/github/confuser/graphql-constraint-directive?targetFile=package.json)
+Allows using `@constraint` directive to validate GraphQL resolver input data.
 
-Allows using @constraint as a directive to validate input data. Inspired by [Constraints Directives RFC](https://github.com/APIs-guru/graphql-constraints-spec) and OpenAPI
+Inspired by [Constraints Directives RFC](https://github.com/APIs-guru/graphql-constraints-spec) and OpenAPI
+
+This library is an extension of [graphql-constraint-directive](https://github.com/confuser/graphql-constraint-directive)
+
+This library by default uses [validator](https://www.npmjs.com/package/validator) for string validation.
+
+We include a test suite that covers using all constraint directives (See [running tests](#Tests)), except for the [List](./ComplextTypes.md) constraint validator (WIP).
+
+If you add support for validating additional string formats (or other validations), please make sure to add tests to cover success/failure cases before making a PR.
 
 ## Install
 
 ```
-npm install graphql-constraint-directive
+npm install graphql-constraint-directive-plus
 ```
 
 ## Usage
 
 ```js
-const ConstraintDirective = require("graphql-constraint-directive");
+const ConstraintDirective = require("graphql-constraint-directive-plus");
 const express = require("express");
 const bodyParser = require("body-parser");
 const { graphqlExpress } = require("apollo-server-express");
@@ -162,29 +168,29 @@ You can pass your own `validator` in the GraphQL context object, conforming to t
 
 - `isLength(value)`
 - `contains(value)`
-- `isAlpha(value, locale)`
 - `isAlphanumeric(value, locale)`
+- `isAlpha(value, locale)`
+- `isAscii(value)`
+- `isByte(value)`
 - `isCreditCard(value)`
 - `isCurrency(value)`
+- `isDataUri(value)`
 - `isDateTime(value)`
 - `isDate(value)`
 - `isDomainName(value)`
+- `isEmail(value)`
 - `isHash(value)`
 - `isHexColor(value)`
-- `isMobilePhone(value, locale)`
-- `isMongoId(value)`
-- `isMimeType(value)`
-- `isPostalCode(value, locale)
 - `isIPv6(value)`
 - `isIPv4(value)`
-- `isEmail(value)`
-- `isByte(value)`
-- `isUri(value)`
-- `isMagnetUri(value)`
-- `isDataUri(value)`
-- `isUUID(value)`
-- `isAscii(value)`
 - `isIsbn(value)`
+- `isMagnetUri(value)`
+- `isMimeType(value)`
+- `isMobilePhone(value, locale)`
+- `isMongoId(value)`
+- `isPostalCode(value, countryCode)
+- `isUri(value)`
+- `isUUID(value)`
 
 Note: All the above methods expect `value` to be a string.
 
@@ -195,31 +201,67 @@ const wrappedValidator = {
   // wrap your own validator using the same API
   isLength: validator.isLength,
   contains: validator.contains,
+
   isAlpha: validator.isAlpha,
   isAlphanumeric: validator.isAlphanumeric,
+  isAscii: validator.isAscii,
+
+  isByte: validator.isBase64,
+
   isCreditCard: validator.isCreditCard,
   isCurrency: validator.isCurrency,
+
+  isDataUri: validator.isDataURI,
   isDateTime: validator.isRFC3339,
   isDate: validator.isISO8601,
   isDomainName: validator.isFQDN,
+
+  isEmail: validator.isEmail,
+
   isHash: validator.isHash,
   isHexColor: validator.isHexColor,
+
+  isIPv6: value => validator.isIP(value, 6),
+  isIPv4: value => validator.isIP(value, 4),
+  isIsbn: validator.isISBN,
+
+  isMagnetUri: validator.isMagnetURI,
   isMobilePhone: validator.isMobilePhone,
   isMongoId: validator.isMongoId,
   isMimeType: validator.isMimeType,
+
   isPostalCode: validator.isPostalCode,
-  isIPv6: value => validator.isIP(value, 6),
-  isIPv4: value => validator.isIP(value, 4),
-  isEmail: validator.isEmail,
-  isByte: validator.isBase64,
-  isAscii: validator.isAscii,
+
   isUri: validator.isURL,
-  isMagnetUri: validator.isMagnetURI,
-  isDataUri: validator.isDataURI,
-  isUUID: validator.isUUID,
-  isIsbn: validator.isISBN
+  isUUID: validator.isUUID
 };
 ```
+
+### String formats
+
+- `alpha-numeric`
+- `alpha`
+- `ascii`
+- `byte`
+- `credit-card`
+- `currency-amount`
+- `data-uri`
+- `date-time`
+- `date`
+- `domain-name`
+- `email`
+- `hash`
+- `hex-color`
+- `ipv4`
+- `ipv6`
+- `isbn`
+- `magnet-uri`
+- `mime-type`
+- `mobile-phone`
+- `mongo-id`
+- `postal-code`
+- `uri`
+- `uuid`
 
 ### Validation messages
 
@@ -261,128 +303,15 @@ value = "John Smith";
 string.validate(name, args, value, { validator, validationError });
 ```
 
-## Validating Complex types
+### Complex types
 
-### Object
+See [Complex types](./ComplexTypes.md)
 
-Validate:
+## Development
 
-- Two fields must have same value (password, confirmedPassword) ie. `same`
-- When one field is set to sth, another field can only have specific set of values (ie. `when`)
+### Tests
 
-We could use `yup` or `class-validator` for full object validation
-
-When visiting an object, we could keep perhaps track of the fields contained within.
-Then we continually check off each field being visited, setting parsed value on `fieldNameValueMap` . When all fields for the object have been "checked off", we call a callback to do full object validation on all parsed values collected.
-
-### Example: Yup object validation
-
-```js
-visitInputObject(object) {
-  const objValidator = createObjectValidator(object)
-  this.stack.push(objValidator)
-}
-
-class ObjectValidator {
-  constructor(object) {
-    this.objTypeName = object.name;
-    this.object = object
-    const fields = object.getFields();
-    this.fields = fields
-    this.fieldNames = Object.keys(fields)
-    this.fieldNameValueMap = {}
-  }
-
-  get shape() {
-    return this.fieldNames.reduce((acc, name) => {
-      const { field, fieldType, value } = this.fieldNameValueMap[name]
-      const fieldSchema = yup[fieldType]()
-      acc[name] = fieldSchema
-      return acc
-    }, {})
-  }
-
-  get schema() {
-    return yup.object().shape(this.shape)
-  }
-
-  validate() {
-    // validate all fields of object in fieldNameValueMap
-    return this.schema.validate()
-  }
-}
-```
-
-For it to work "for real", we need to push each such validator on a stack so that each field uses the one at the top of the stack. Then when done validating, remove it from the stack...
-
-Alternatively, use the `ObjectValueNode` when parsing values in scalars as described below.
-Shouldn't have to be so complicated!
-
-### Lists
-
-Validate:
-
-- Number of items in list
-- Particular items allowed in list
-- ...
-
-List validations now have experimental support via `handleList` method of the `ConstraintDirective` class.
-
-- `includes` each list value must exactly match one of the `includes` items
-- `excludes` none of list values may match any of the `excludes` items
-- `matches` each list value must pass one of the matches constraints (such as `minLength: 3`)
-
-Lists are defined as modifiers on other types. We should be able to at least validate lists of `String`, `Int` and `Float` for starters.
-
-A schema definition like: `type: [User!]!` would result in:
-
-`type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(User)))`
-
-A scalar has a `parseValue` function which returns a `ValueNode` from a `Source`:
-
-```ts
-export type ValueNode =
-  | VariableNode
-  | IntValueNode
-  | FloatValueNode
-  | StringValueNode
-  | BooleanValueNode
-  | NullValueNode
-  | EnumValueNode
-  | ListValueNode
-  | ObjectValueNode;
-```
-
-As we can see, such a value can be a `ListValueNode`:
-
-```ts
-export interface ListValueNode {
-  readonly kind: "ListValue";
-  readonly loc?: Location;
-  readonly values: ReadonlyArray<ValueNode>;
-}
-```
-
-For an object return value
-
-```ts
-export interface ObjectValueNode {
-  readonly kind: "ObjectValue";
-  readonly loc?: Location;
-  readonly fields: ReadonlyArray<ObjectFieldNode>;
-}
-```
-
-with fields:
-
-```ts
-export interface ObjectFieldNode {
-  readonly kind: "ObjectField";
-  readonly loc?: Location;
-  readonly name: NameNode;
-  readonly value: ValueNode;
-}
-```
+Run `npm run test:nolint` to run all tests without linting
 
 ## Resources
 
@@ -390,3 +319,7 @@ export interface ObjectFieldNode {
 - [Deep dive into GraphQL type system](https://github.com/mugli/learning-graphql/blob/master/7.%20Deep%20Dive%20into%20GraphQL%20Type%20System.md)
 - [Life of a GraphQL Query — Validation](https://medium.com/@cjoudrey/life-of-a-graphql-query-validation-18a8fb52f189)
 - [Graphql validated types](https://www.npmjs.com/package/graphql-validated-types)
+
+## License
+
+See [License](./LICENSE)

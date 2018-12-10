@@ -8,6 +8,6 @@ module.exports = (value, opts = {}) => {
   };
   return (
     isCurrency(value, opts.currency) ||
-    validationError.format("currency", value)
+    validationError.format("currencyAmount", value)
   );
 };

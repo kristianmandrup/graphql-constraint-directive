@@ -7,5 +7,5 @@ module.exports = (value, opts = {}) => {
     ...opts.validationError
   };
 
-  return isAscii(value, opts.locale) || validationError.format("ascii", value);
+  return isAscii(value) || validationError.format("ascii", value);
 };

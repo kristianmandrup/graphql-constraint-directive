@@ -13,13 +13,13 @@ module.exports = class ConstraintScalarType extends GraphQLScalarType {
 
         validate[typeName](name, args, value, { validator });
 
-        return type.parseValue(values);
+        return type.parseValue(value);
       },
       parseLiteral(ast) {
         const value = type.parseLiteral(ast);
         validate[typeName](name, args, value, { validator });
 
-        return values;
+        return value;
       }
     });
   }

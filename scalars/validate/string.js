@@ -7,6 +7,16 @@ function validate(name, args, value, opts = {}) {
 
 class StringValidator {
   constructor(name, args, value, opts = {}) {
+    const argsOpts = {};
+    if (/w+/.test(args.locale)) {
+      argsOpts.locale = args.locale;
+    }
+    opts = {
+      ...this.defaultOpts,
+      ...argsOpts,
+      ...opts
+    };
+
     const validationError = opts.validationError || handleError;
     const { contains, isLength } = opts.validator;
     this.contains = contains;
@@ -16,6 +26,45 @@ class StringValidator {
     this.name = name;
     this.args = args;
     this.value = value;
+    this.opts = opts;
+  }
+
+  get defaultOpts() {
+    return {
+      locale: "en-US",
+      hashAlgo: "md5",
+      domainName: {
+        require_tld: true,
+        allow_underscores: false,
+        allow_trailing_dot: false
+      },
+      email: {
+        allow_display_name: false,
+        require_display_name: false,
+        allow_utf8_local_part: true,
+        require_tld: true,
+        allow_ip_domain: false,
+        domain_specific_validation: false
+      },
+      countryCode: "US", // country code such as US
+      currency: {
+        symbol: "$",
+        require_symbol: false,
+        allow_space_after_symbol: false,
+        symbol_after_digits: false,
+        allow_negatives: true,
+        parens_for_negatives: false,
+        negative_sign_before_digits: false,
+        negative_sign_after_digits: false,
+        allow_negative_sign_placeholder: false,
+        thousands_separator: ",",
+        decimal_separator: ".",
+        allow_decimal: true,
+        require_decimal: false,
+        digits_after_decimal: [2],
+        allow_space_after_digits: false
+      }
+    };
   }
 
   validate() {
@@ -128,7 +177,7 @@ class StringValidator {
       }
 
       try {
-        const opts = { validationError, validator };
+        const opts = { validationError, validator, ...this.opts };
 
         formatter(value, opts); // Will throw if invalid
       } catch (e) {

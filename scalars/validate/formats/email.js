@@ -6,5 +6,5 @@ module.exports = (value, opts = {}) => {
     ...formatError,
     ...opts.validationError
   };
-  return isEmail(value) || validationError.format("email", value);
+  return isEmail(value, opts.email) || validationError.format("email", value);
 };

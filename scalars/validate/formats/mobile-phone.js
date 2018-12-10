@@ -7,7 +7,7 @@ module.exports = (value, opts = {}) => {
     ...opts.validationError
   };
   return (
-    isMobilePhone(value, opts.phone) ||
+    isMobilePhone(value, opts.locale) ||
     validationError.format("mobilePhone", value)
   );
 };

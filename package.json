@@ -1,24 +1,24 @@
 {
-  "name": "graphql-constraint-directive",
-  "version": "1.4.0",
-  "description": "Validate GraphQL fields",
+  "name": "graphql-constraint-directive-plus",
+  "version": "1.5.0",
+  "description": "Validate GraphQL resolver input fields via constraint directives",
   "main": "index.js",
   "scripts": {
     "test": "standard && nyc --reporter=html --reporter=text mocha test/**/*.test.js",
     "test:nolint": "nyc --reporter=html --reporter=text mocha test/**/*.test.js",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
-  "author": "James Mortemore (jamesmortemore@gmail.com)",
+  "author": "Kristian Mandrup (kmandrup@gmail.com)",
   "license": "ISC",
   "engines": {
     "node": ">=8.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:confuser/graphql-constraint-directive.git"
+    "url": "git@github.com:kristianmandrup/graphql-constraint-directive.git"
   },
   "bugs": {
-    "url": "https://github.com/confuser/graphql-constraint-directive/issues"
+    "url": "https://github.com/kristianmandrup/graphql-constraint-directive/issues"
   },
   "keywords": [
     "graphql",

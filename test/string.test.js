@@ -13,12 +13,6 @@ describe("@constraint String", function() {
     }
   }`;
 
-  const accountQuery = `mutation createAccount($input: AccountInput) {
-    createAccount(input: $input) {
-      ccCard
-    }
-  }`;
-
   describe("#minLength", function() {
     before(function() {
       this.typeDefs = `
@@ -477,7 +471,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"title":"£££"}; Expected type ConstraintString at value.title; Must be in alphaNumeric format'
+          'Variable "$input" got invalid value {"title":"£££"}; Expected type ConstraintString at value.title; Must contain only alphabet and numeric characters'
         );
       });
 
@@ -490,10 +484,10 @@ describe("@constraint String", function() {
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be in alphaNumeric format",
+          message: "Must contain only alphabet and numeric characters",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "title",
-          context: [{ arg: "format", value: "alphaNumeric" }]
+          context: [{ arg: "format", value: "alpha-numeric" }]
         });
       });
     });
@@ -542,7 +536,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"title":"abc1"}; Expected type ConstraintString at value.title; Must be in alpha format'
+          'Variable "$input" got invalid value {"title":"abc1"}; Expected type ConstraintString at value.title; Must contain only alphabet characters'
         );
       });
 
@@ -555,7 +549,7 @@ describe("@constraint String", function() {
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be in alpha format",
+          message: "Must contain only alphabet characters",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "title",
           context: [{ arg: "format", value: "alpha" }]
@@ -607,7 +601,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"title":"naughty😈"}; Expected type ConstraintString at value.title; Must be in ascii format'
+          'Variable "$input" got invalid value {"title":"naughty😈"}; Expected type ConstraintString at value.title; Must contain only ASCII characters'
         );
       });
 
@@ -620,7 +614,7 @@ describe("@constraint String", function() {
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be in ascii format",
+          message: "Must contain only ASCII characters",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "title",
           context: [{ arg: "format", value: "ascii" }]
@@ -697,15 +691,15 @@ describe("@constraint String", function() {
       before(function() {
         this.typeDefs = `
         type Query {
-          accounts: [Account]
+          books: [Book]
         }
         type Book {
-          ccNumber: String
+          title: String
         }
         type Mutation {
-          createAccount(input: AccountInput): Account
+          createBook(input: BookInput): Book
         }
-        input AccountInput {
+        input BookInput {
           ccNumber: String! @constraint(format: "credit-card")
         }`;
 
@@ -717,12 +711,12 @@ describe("@constraint String", function() {
           .post("/graphql")
           .set("Accept", "application/json")
           .send({
-            accountQuery,
+            query,
             variables: { input: { ccNumber: "5555555555554444" } }
           });
 
         strictEqual(statusCode, 200);
-        deepStrictEqual(body, { data: { createAccount: null } });
+        deepStrictEqual(body, { data: { createBook: null } });
       });
 
       it("should fail", async function() {
@@ -730,14 +724,14 @@ describe("@constraint String", function() {
           .post("/graphql")
           .set("Accept", "application/json")
           .send({
-            accountQuery,
+            query,
             variables: { input: { ccNumber: "a" } }
           });
 
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"ccNumber":"a"}; Expected type ConstraintString at value.ccNumber; Must be a valid credit-card number'
+          'Variable "$input" got invalid value {"ccNumber":"a"}; Expected type ConstraintString at value.ccNumber; Must be a valid credit card number'
         );
       });
 
@@ -746,11 +740,11 @@ describe("@constraint String", function() {
         const { body, statusCode } = await request
           .post("/graphql")
           .set("Accept", "application/json")
-          .send({ accountQuery, variables: { input: { ccNumber: "a" } } });
+          .send({ query, variables: { input: { ccNumber: "a" } } });
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be a valid credit-card number",
+          message: "Must be a valid credit card number",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "ccNumber",
           context: [{ arg: "format", value: "credit-card" }]
@@ -771,8 +765,7 @@ describe("@constraint String", function() {
           createBook(input: BookInput): Book
         }
         input BookInput {
-          title: String! @constraint(format: "byte")
-          currencyCode: String! @constraint(format: "currency")
+          price: String! @constraint(format: "currency-amount")
         }`;
 
         this.request = setup(this.typeDefs);
@@ -784,7 +777,7 @@ describe("@constraint String", function() {
           .set("Accept", "application/json")
           .send({
             query,
-            variables: { input: { currencyCode: "USD" } }
+            variables: { input: { price: "10.00" } }
           });
 
         strictEqual(statusCode, 200);
@@ -797,13 +790,13 @@ describe("@constraint String", function() {
           .set("Accept", "application/json")
           .send({
             query,
-            variables: { input: { currencyCode: "£££" } }
+            variables: { input: { price: "1.234" } }
           });
 
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"title":"£££"}; Expected type ConstraintString at value.currencyCode; Must be a valid currency code'
+          'Variable "$input" got invalid value {"price":"1.234"}; Expected type ConstraintString at value.price; Must be a valid currency amount'
         );
       });
 
@@ -812,14 +805,14 @@ describe("@constraint String", function() {
         const { body, statusCode } = await request
           .post("/graphql")
           .set("Accept", "application/json")
-          .send({ query, variables: { input: { currency: "xyz" } } });
+          .send({ query, variables: { input: { price: "xyz" } } });
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be a valid currency code",
+          message: "Must be a valid currency amount",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
-          fieldName: "currencyCode",
-          context: [{ arg: "format", value: "currency-code" }]
+          fieldName: "price",
+          context: [{ arg: "format", value: "currency-amount" }]
         });
       });
     });
@@ -837,7 +830,6 @@ describe("@constraint String", function() {
           createBook(input: BookInput): Book
         }
         input BookInput {
-          title: String! @constraint(format: "byte")
           uri: String! @constraint(format: "data-uri")
         }`;
 
@@ -873,7 +865,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"title":"£££"}; Expected type ConstraintString at value.currencyCode; Must be a valid data uri'
+          'Variable "$input" got invalid value {"uri":"£££"}; Expected type ConstraintString at value.uri; Must be in data uri format'
         );
       });
 
@@ -886,7 +878,7 @@ describe("@constraint String", function() {
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be a valid data uri",
+          message: "Must be in data uri format",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "uri",
           context: [{ arg: "format", value: "data-uri" }]
@@ -907,7 +899,6 @@ describe("@constraint String", function() {
           createBook(input: BookInput): Book
         }
         input BookInput {
-          title: String! @constraint(format: "byte")
           domain: String! @constraint(format: "domain-name")
         }`;
 
@@ -937,13 +928,13 @@ describe("@constraint String", function() {
           .set("Accept", "application/json")
           .send({
             query,
-            variables: { domain: { uri: "£££" } }
+            variables: { input: { domain: "£££" } }
           });
 
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"domain":"£££"}; Expected type ConstraintString at value.currencyCode; Must be a valid domain name'
+          'Variable "$input" got invalid value {"domain":"£££"}; Expected type ConstraintString at value.domain; Must be a valid domain name'
         );
       });
 
@@ -1205,7 +1196,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"hashCode":"a"}; Expected type ConstraintString at value.title; Must be a valid hash'
+          'Variable "$input" got invalid value {"hashCode":"a"}; Expected type ConstraintString at value.hashCode; Must be in hash format'
         );
       });
 
@@ -1266,13 +1257,13 @@ describe("@constraint String", function() {
           .set("Accept", "application/json")
           .send({
             query,
-            variables: { input: { color: "a" } }
+            variables: { input: { color: "$" } }
           });
 
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"color":"a"}; Expected type ConstraintString at value.title; Must be a valid hex color'
+          'Variable "$input" got invalid value {"color":"$"}; Expected type ConstraintString at value.color; Must be a valid hex color'
         );
       });
 
@@ -1281,7 +1272,7 @@ describe("@constraint String", function() {
         const { body, statusCode } = await request
           .post("/graphql")
           .set("Accept", "application/json")
-          .send({ query, variables: { input: { hashCode: "a" } } });
+          .send({ query, variables: { input: { color: "%" } } });
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
@@ -1467,7 +1458,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"isbn":"978-3-16999-1"}; Expected type ConstraintString at value.title; Must be a valid ISBN'
+          'Variable "$input" got invalid value {"isbn":"978-3-16999-1"}; Expected type ConstraintString at value.isbn; Must be in ISBN format'
         );
       });
 
@@ -1480,7 +1471,7 @@ describe("@constraint String", function() {
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be a valid ISBN",
+          message: "Must be in ISBN format",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "isbn",
           context: [{ arg: "format", value: "isbn" }]
@@ -1508,6 +1499,8 @@ describe("@constraint String", function() {
       });
 
       it("should pass", async function() {
+        const magnetUri =
+          "magnet:?xt=urn:btih:d2474e86c95b19b8bcfdb92bc12c9d44667cfa36&dn=Leaves+of+Grass+by+Walt+Whitman.epub&tr=udp%3A%2F%2Ftracker.example4.com%3A80&tr=udp%3A%2F%2Ftracker.example5.com%3A80&tr=udp%3A%2F%2Ftracker.example3.com%3A6969&tr=udp%3A%2F%2Ftracker.example2.com%3A80&tr=udp%3A%2F%2Ftracker.example1.com%3A1337";
         const { body, statusCode } = await this.request
           .post("/graphql")
           .set("Accept", "application/json")
@@ -1515,8 +1508,7 @@ describe("@constraint String", function() {
             query,
             variables: {
               input: {
-                uri:
-                  "magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a"
+                uri: magnetUri
               }
             }
           });
@@ -1537,7 +1529,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"uri":"magnet:x.y/z"}; Expected type ConstraintString at value.title; Must be a valid magnet uri'
+          'Variable "$input" got invalid value {"uri":"magnet:x.y/z"}; Expected type ConstraintString at value.uri; Must be in magnet uri format'
         );
       });
 
@@ -1550,7 +1542,7 @@ describe("@constraint String", function() {
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be a valid magnet uri",
+          message: "Must be in magnet uri format",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "uri",
           context: [{ arg: "format", value: "magnet-uri" }]
@@ -1606,7 +1598,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"mime":"xy"}; Expected type ConstraintString at value.title; Must be a valid MIME type'
+          'Variable "$input" got invalid value {"mime":"xy"}; Expected type ConstraintString at value.mime; Must be a valid MIME type'
         );
       });
 
@@ -1675,7 +1667,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"phone":"1-6660-999-301"}; Expected type ConstraintString at value.title; Must be a valid US mobile phone number'
+          'Variable "$input" got invalid value {"phone":"1-6660-999-301"}; Expected type ConstraintString at value.phone; Must be a valid mobile phone number'
         );
       });
 
@@ -1688,7 +1680,7 @@ describe("@constraint String", function() {
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be a valid US mobile phone number",
+          message: "Must be a valid mobile phone number",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "phone",
           context: [{ arg: "format", value: "mobile-phone" }]
@@ -1709,7 +1701,7 @@ describe("@constraint String", function() {
           createBook(input: BookInput): Book
         }
         input BookInput {
-          id: String! @constraint(format: "mongo-id"")
+          id: String! @constraint(format: "mongo-id")
         }`;
 
         this.request = setup(this.typeDefs);
@@ -1744,7 +1736,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"phone":"1-6660-999-301"}; Expected type ConstraintString at value.title; Must be a valid Mongo id'
+          'Variable "$input" got invalid value {"id":"16660999301"}; Expected type ConstraintString at value.id; Must be a valid Mongo ID'
         );
       });
 
@@ -1757,7 +1749,7 @@ describe("@constraint String", function() {
 
         strictEqual(statusCode, 400);
         deepStrictEqual(body.errors[0], {
-          message: "Must be a valid Mongo id",
+          message: "Must be a valid Mongo ID",
           code: "ERR_GRAPHQL_CONSTRAINT_VALIDATION",
           fieldName: "id",
           context: [{ arg: "format", value: "mongo-id" }]
@@ -1778,7 +1770,7 @@ describe("@constraint String", function() {
           createBook(input: BookInput): Book
         }
         input BookInput {
-          postal: String! @constraint(format: "postal-code"")
+          postal: String! @constraint(format: "postal-code")
         }`;
 
         this.request = setup(this.typeDefs);
@@ -1813,7 +1805,7 @@ describe("@constraint String", function() {
         strictEqual(statusCode, 400);
         strictEqual(
           body.errors[0].message,
-          'Variable "$input" got invalid value {"phone":"1-6660-999-301"}; Expected type ConstraintString at value.title; Must be a valid postal code'
+          'Variable "$input" got invalid value {"postal":"0999301"}; Expected type ConstraintString at value.postal; Must be a valid postal code'
         );
       });
 

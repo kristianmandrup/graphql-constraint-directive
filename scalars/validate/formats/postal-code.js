@@ -6,8 +6,9 @@ module.exports = (value, opts = {}) => {
     ...formatError,
     ...opts.validationError
   };
+  console.log({ opts });
   return (
-    isPostalCode(value, opts.locale) ||
+    isPostalCode(value, opts.countryCode) ||
     validationError.format("postalCode", value)
   );
 };
