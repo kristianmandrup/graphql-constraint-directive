@@ -9,7 +9,7 @@ module.exports = {
   hash: "Must be in hash format",
   hexColor: "Must be a valid hex color",
   mongoId: "Must be a valid Mongo ID",
-  mobilePhone: "Must be a valid mobile phone",
+  mobilePhone: "Must be a valid US mobile phone number",
   postalCode: "Must be a valid postal code",
   mimeType: "Must be a valid MIME type",
   email: "Must be in email format",

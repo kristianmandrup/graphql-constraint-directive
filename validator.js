@@ -23,6 +23,8 @@ const wrappedValidator = {
   isByte: validator.isBase64,
   isAscii: validator.isAscii,
   isUri: validator.isURL,
+  isMagnetUri: validator.isMagnetURI,
+  isDataUri: validator.isDataURI,
   isUUID: validator.isUUID,
   isIsbn: validator.isISBN
 };

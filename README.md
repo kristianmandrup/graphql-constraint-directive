@@ -157,38 +157,67 @@ app.use("/graphql", bodyParser.json(), graphqlExpress({ schema, formatError }));
 ## Customization
 
 By default, the constraint directive uses [validator.js](https://www.npmjs.com/package/validator)
+
 You can pass your own `validator` in the GraphQL context object, conforming to this API:
 
 - `isLength(value)`
 - `contains(value)`
+- `isAlpha(value, locale)`
+- `isAlphanumeric(value, locale)`
+- `isCreditCard(value)`
+- `isCurrency(value)`
 - `isDateTime(value)`
 - `isDate(value)`
+- `isDomainName(value)`
+- `isHash(value)`
+- `isHexColor(value)`
+- `isMobilePhone(value, locale)`
+- `isMongoId(value)`
+- `isMimeType(value)`
+- `isPostalCode(value, locale)
 - `isIPv6(value)`
 - `isIPv4(value)`
 - `isEmail(value)`
 - `isByte(value)`
 - `isUri(value)`
+- `isMagnetUri(value)`
+- `isDataUri(value)`
 - `isUUID(value)`
+- `isAscii(value)`
+- `isIsbn(value)`
 
-Note: All the above methods expect value to be a string.
+Note: All the above methods expect `value` to be a string.
 
-The default validator is wrapped as follows:
+The default [validator](https://www.npmjs.com/package/validator) is wrapped as follows:
 
 ```js
-const validator = {
-  isLength: $validator.isLength,
-  contains: $validator.contains,
-  isAlpha: $validator.isAlpha,
-  isAlphanumeric: $validator.isAlphanumeric,
-  isCreditCard: $validator.isCreditCard,
-  isDateTime: $validator.isRFC3339,
-  isDate: $validator.isISO8601,
-  isIPv6: value => $validator.isIP(value, 6),
-  isIPv4: value => $validator.isIP(value, 4),
-  isEmail: $validator.isEmail,
-  isByte: $validator.isBase64,
-  isUri: $validator.isURL,
-  isUUID: $validator.isUUID
+const wrappedValidator = {
+  // wrap your own validator using the same API
+  isLength: validator.isLength,
+  contains: validator.contains,
+  isAlpha: validator.isAlpha,
+  isAlphanumeric: validator.isAlphanumeric,
+  isCreditCard: validator.isCreditCard,
+  isCurrency: validator.isCurrency,
+  isDateTime: validator.isRFC3339,
+  isDate: validator.isISO8601,
+  isDomainName: validator.isFQDN,
+  isHash: validator.isHash,
+  isHexColor: validator.isHexColor,
+  isMobilePhone: validator.isMobilePhone,
+  isMongoId: validator.isMongoId,
+  isMimeType: validator.isMimeType,
+  isPostalCode: validator.isPostalCode,
+  isIPv6: value => validator.isIP(value, 6),
+  isIPv4: value => validator.isIP(value, 4),
+  isEmail: validator.isEmail,
+  isByte: validator.isBase64,
+  isAscii: validator.isAscii,
+  isUri: validator.isURL,
+  isMagnetUri: validator.isMagnetURI,
+  isDataUri: validator.isDataURI,
+  isUUID: validator.isUUID,
+  isIsbn: validator.isISBN
 };
 ```
 
