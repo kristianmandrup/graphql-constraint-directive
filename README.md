@@ -48,6 +48,71 @@ const app = express();
 app.use("/graphql", bodyParser.json(), graphqlExpress({ schema }));
 ```
 
+## Integrations
+
+Syncing validation for:
+
+- entity models (on mutation save)
+- forms (on field change or submit)
+
+You can use the constraints of this library with [graphql-typeorm-validation](https://github.com/kristianmandrup/graphql-typeorm-validation) to generate decorators for [class-validator] that can be used on any entity model, such as a TypeOrm entity
+
+```ts
+@Entity
+class Person extends BaseEntity {
+  @MinLength(2)
+  @MaxLength(60)
+  name: string;
+}
+```
+
+Use this with a typeorm `connection` to build an entity class map, where each map entry is a model class with matching [class-validator](https://github.com/typestack/class-validator) validation decorators applied.
+
+The validation constraints are extracted via [graphGenTypeorm](https://github.com/jjwtay/graphGenTypeorm) from a GraphQL type definition
+
+```js
+import { buildEntityClassMap } from "graphql-typeorm-validation";
+
+const entityClassMap = buildEntityClassMap(connection);
+const { Post } = entityClassMap;
+// ...
+```
+
+First your `createPost` mutation resolver applies directive constraints on input object.
+It can then call `createPostModel` to create an in-memory Post model, validate it and then save it to the typeorm store.
+
+```js
+const createPostModel = async ({title, text}) {
+  try {
+    let postRepository = connection.getRepository("Post");
+    let post = new Post();
+    post.title = title;
+    post.text = text;
+    await validate(post, {
+      // ... optional validation options
+    });
+    await postRepository.save(post);
+    return post
+  } catch (err) {
+    handleError(`createPostModel failure: ${err.message}`, err)
+  }
+}
+```
+
+[graphGenTypeorm](https://github.com/jjwtay/graphGenTypeorm) uses [graphSchemaToJson](https://github.com/jjwtay/graphSchemaToJson) to first convert GraphQL type definitions (schema) to a Javascript object (JSON).
+
+You could feed this schema object directly to the [mapper](https://github.com/kristianmandrup/graphql-typeorm-validation/blob/master/src/lib/class-validator/mapper.ts) using an approach similar to [decorate](https://github.com/kristianmandrup/graphql-typeorm-validation/blob/master/src/lib/typeorm.ts#L63) in order to decorate your entity class with `class-validator` decorators.
+
+You can further use the schema object to generate [Yup](https://github.com/jquense/yup) form validations, using custom models in [json-schema-to-yup](https://www.npmjs.com/package/json-schema-to-yup#custom-models).
+
+With a little trickery, you could sync your validations across:
+
+- models
+- mutation resolvers
+- forms
+
+Would love to see your contributions to make this dream into reality. Almost there!
+
 ## API
 
 ### String
