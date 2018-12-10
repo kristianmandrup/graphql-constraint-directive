@@ -115,7 +115,22 @@ Yup goes hand-in-glove with [Formik](https://github.com/jaredpalmer/formik), the
 
 We then need to use [Yup addMethod](https://medium.com/@arkadyt/how-does-yup-addmethod-work-creating-custom-validation-functions-with-yup-8fddb71a5470) to create additional Yup validators to match those available for the `@constraint` directive
 
-With a little trickery, you could sync your validations across:
+```js
+const validator = require("validator");
+
+Yup.addMethod(Yup.string, "isHexColor", function(args) {
+  const { message } = args;
+  return this.test("hex-color", message, function(value) {
+    const { path, createError } = this;
+    // [value] - value of the property being tested
+    // [path]  - property name,
+    // ...
+    return validator.isHexColor(value) || createError({ path, message });
+  });
+});
+```
+
+With a little "trickery", you can sync your validations across:
 
 - models
 - mutation resolvers
