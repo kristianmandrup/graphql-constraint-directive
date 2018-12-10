@@ -113,6 +113,8 @@ You can further use the schema object to generate [Yup](https://github.com/jquen
 
 Yup goes hand-in-glove with [Formik](https://github.com/jaredpalmer/formik), the amazing form builder. Ideally you would then also generate the form, mapping model/type fields to form fields...
 
+We then need to use [Yup addMethod](https://medium.com/@arkadyt/how-does-yup-addmethod-work-creating-custom-validation-functions-with-yup-8fddb71a5470) to create additional Yup validators to match those available for the `@constraint` directive
+
 With a little trickery, you could sync your validations across:
 
 - models
