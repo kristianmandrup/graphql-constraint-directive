@@ -103,7 +103,9 @@ const createPostModel = async ({title, text}) {
 
 [graphGenTypeorm](https://github.com/jjwtay/graphGenTypeorm) uses [graphSchemaToJson](https://github.com/jjwtay/graphSchemaToJson) to first convert GraphQL type definitions (schema) to a Javascript object (JSON).
 
-You could feed this schema object directly to the [mapper](https://github.com/kristianmandrup/graphql-typeorm-validation/blob/master/src/lib/class-validator/mapper.ts) using an approach similar to [decorate](https://github.com/kristianmandrup/graphql-typeorm-validation/blob/master/src/lib/typeorm.ts#L63) in order to decorate your entity class with `class-validator` decorators.
+You could feed this schema object directly to the [mapper](https://github.com/kristianmandrup/graphql-typeorm-validation/blob/master/src/lib/class-validator/mapper.ts).
+
+This can be done using the [decorate class API](https://github.com/kristianmandrup/graphql-typeorm-validation/blob/master/src/lib/decorate-class.ts) which lets you decorate any entity class with `class-validator` decorators.
 
 ### Syncing validations with forms
 
