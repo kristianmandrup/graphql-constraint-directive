@@ -1,6 +1,6 @@
 {
   "name": "graphql-constraint-directive-plus",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Validate GraphQL resolver input fields via constraint directives",
   "main": "index.js",
   "scripts": {

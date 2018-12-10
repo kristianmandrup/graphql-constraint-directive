@@ -5,12 +5,32 @@ function validate(name, args, value, opts = {}) {
   return new StringValidator(name, args, value, opts).validate();
 }
 
+function isObject(val) {
+  return val instanceof Object;
+}
+
 class StringValidator {
   constructor(name, args, value, opts = {}) {
     const argsOpts = {};
     if (/w+/.test(args.locale)) {
       argsOpts.locale = args.locale;
     }
+    if (/w+/.test(args.hashAlgo)) {
+      argsOpts.hashAlgo = args.hashAlgo;
+    }
+    if (/w+/.test(args.countryCode)) {
+      argsOpts.countryCode = args.countryCode;
+    }
+    if (isObject(args.domainName)) {
+      argsOpts.domainName = args.domainName;
+    }
+    if (isObject(args.email)) {
+      argsOpts.email = args.email;
+    }
+    if (isObject(args.currency)) {
+      argsOpts.currency = args.currency;
+    }
+
     opts = {
       ...this.defaultOpts,
       ...argsOpts,

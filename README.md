@@ -94,17 +94,75 @@ Ensure value is in a particular format
 
 Supported formats:
 
-- byte: Base64
-- date-time: RFC 3339
-- date: ISO 8601
-- email
-- ipv4
-- ipv6
-- uri
-- uuid
-- alpha
-- alpha-numeric
-- credit-card
+- `alpha-numeric`
+- `alpha`
+- `ascii`
+- `byte`
+- `credit-card`
+- `currency-amount`
+- `data-uri`
+- `date-time`
+- `date`
+- `domain-name`
+- `email`
+- `hash`
+- `hex-color`
+- `ipv4`
+- `ipv6`
+- `isbn`
+- `magnet-uri`
+- `mime-type`
+- `mobile-phone`
+- `mongo-id`
+- `postal-code`
+- `uri`
+- `uuid`
+
+Format validator options can be set as additional directive arguments:
+
+```js
+@constraint(format: 'alpha-numeric', locale: 'en-US')
+```
+
+Format options available (with default values):
+
+```js
+{
+  locale: "en-US",
+  hashAlgo: "md5",
+  domainName: {
+    require_tld: true,
+    allow_underscores: false,
+    allow_trailing_dot: false
+  },
+  email: {
+    allow_display_name: false,
+    require_display_name: false,
+    allow_utf8_local_part: true,
+    require_tld: true,
+    allow_ip_domain: false,
+    domain_specific_validation: false
+  },
+  countryCode: "US", // country code such as US
+  currency: {
+    symbol: "$",
+    require_symbol: false,
+    allow_space_after_symbol: false,
+    symbol_after_digits: false,
+    allow_negatives: true,
+    parens_for_negatives: false,
+    negative_sign_before_digits: false,
+    negative_sign_after_digits: false,
+    allow_negative_sign_placeholder: false,
+    thousands_separator: ",",
+    decimal_separator: ".",
+    allow_decimal: true,
+    require_decimal: false,
+    digits_after_decimal: [2],
+    allow_space_after_digits: false
+  }
+}
+```
 
 ### Int/Float
 
@@ -236,32 +294,6 @@ const wrappedValidator = {
   isUUID: validator.isUUID
 };
 ```
-
-### String formats
-
-- `alpha-numeric`
-- `alpha`
-- `ascii`
-- `byte`
-- `credit-card`
-- `currency-amount`
-- `data-uri`
-- `date-time`
-- `date`
-- `domain-name`
-- `email`
-- `hash`
-- `hex-color`
-- `ipv4`
-- `ipv6`
-- `isbn`
-- `magnet-uri`
-- `mime-type`
-- `mobile-phone`
-- `mongo-id`
-- `postal-code`
-- `uri`
-- `uuid`
 
 ### Validation messages
 
