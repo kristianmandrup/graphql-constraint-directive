@@ -9,16 +9,15 @@ module.exports = class ConstraintScalarType extends GraphQLScalarType {
         return type.serialize(value);
       },
       parseValue(value) {
-        values = type.serialize(value);
+        value = type.serialize(value);
 
-        validate[typeName](name, args, values, { validator });
+        validate[typeName](name, args, value, { validator });
 
         return type.parseValue(values);
       },
       parseLiteral(ast) {
-        const values = type.parseLiteral(ast);
-
-        validate[typeName](name, args, values, { validator });
+        const value = type.parseLiteral(ast);
+        validate[typeName](name, args, value, { validator });
 
         return values;
       }

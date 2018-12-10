@@ -1,13 +1,13 @@
 const { handleError } = require("./error");
-import { validate as validateNumber } from "./number";
-import { validate as validateString } from "./string";
+const number = require("./number");
+const string = require("./string");
 
 const validatorMap = {
-  number: validateNumber,
-  string: validateString
+  number: number.validate,
+  string: string.validate
 };
 
-export function validate(name, args, value, opts = {}) {
+function validate(name, args, value, opts = {}) {
   return new ListValidator(name, args, value, opts).validate();
 }
 
@@ -81,3 +81,8 @@ class ListValidator {
     }
   }
 }
+
+module.exports = {
+  validate,
+  ListValidator
+};

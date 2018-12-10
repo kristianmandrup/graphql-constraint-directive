@@ -1,14 +1,10 @@
 const formatError = require("./_format-error");
 
 module.exports = (value, opts = {}) => {
-  const { isAlphanumeric } = opts.validator;
+  const { isHash } = opts.validator;
   const validationError = {
     ...formatError,
     ...opts.validationError
   };
-
-  return (
-    isAlphanumeric(value, opts.locale) ||
-    validationError.format("alphaNumeric", value)
-  );
+  return isHash(value, opts.hashAlgo) || validationError.format("hash", value);
 };

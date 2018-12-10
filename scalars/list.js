@@ -1,4 +1,4 @@
-const { ConstraintScalarType } = require("./scalar");
+const ConstraintScalarType = require("./scalar");
 
 module.exports = class ConstraintListType extends ConstraintScalarType {
   constructor({ name, type, validator }, args) {

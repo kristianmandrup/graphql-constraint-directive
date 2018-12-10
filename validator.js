@@ -7,14 +7,24 @@ const wrappedValidator = {
   isAlpha: validator.isAlpha,
   isAlphanumeric: validator.isAlphanumeric,
   isCreditCard: validator.isCreditCard,
+  isCurrency: validator.isCurrency,
   isDateTime: validator.isRFC3339,
   isDate: validator.isISO8601,
+  isDomainName: validator.isFQDN,
+  isHash: validator.isHash,
+  isHexColor: validator.isHexColor,
+  isMobilePhone: validator.isMobilePhone,
+  isMongoId: validator.isMongoId,
+  isMimeType: validator.isMimeType,
+  isPostalCode: validator.isPostalCode,
   isIPv6: value => validator.isIP(value, 6),
   isIPv4: value => validator.isIP(value, 4),
   isEmail: validator.isEmail,
   isByte: validator.isBase64,
+  isAscii: validator.isAscii,
   isUri: validator.isURL,
-  isUUID: validator.isUUID
+  isUUID: validator.isUUID,
+  isIsbn: validator.isISBN
 };
 
 module.exports = wrappedValidator;

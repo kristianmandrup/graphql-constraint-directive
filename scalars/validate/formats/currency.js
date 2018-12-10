@@ -1,14 +1,13 @@
 const formatError = require("./_format-error");
 
 module.exports = (value, opts = {}) => {
-  const { isAlphanumeric } = opts.validator;
+  const { isCurrency } = opts.validator;
   const validationError = {
     ...formatError,
     ...opts.validationError
   };
-
   return (
-    isAlphanumeric(value, opts.locale) ||
-    validationError.format("alphaNumeric", value)
+    isCurrency(value, opts.currency) ||
+    validationError.format("currency", value)
   );
 };

@@ -7,5 +7,5 @@ module.exports = (value, opts = {}) => {
     ...opts.validationError
   };
 
-  return isAlpha(value) || validationError.format("alpha", value);
+  return isAlpha(value, opts.locale) || validationError.format("alpha", value);
 };

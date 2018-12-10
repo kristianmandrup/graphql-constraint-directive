@@ -1,7 +1,7 @@
 const formats = require("./formats");
 const { handleError } = require("./error");
 
-export function validate(name, args, value, opts = {}) {
+function validate(name, args, value, opts = {}) {
   return new StringValidator(name, args, value, opts).validate();
 }
 
@@ -26,8 +26,19 @@ class StringValidator {
       .containsText()
       .notContainsText()
       .pattern()
+      .afterDate()
       .format();
     return true;
+  }
+
+  afterDate() {
+    const { value, name, args, validationError, isLength } = this;
+    if (args.afterDate && !validator.isAfter(args.afterDate)) {
+      validationError.string(name, `Must be after date ${args.afterDate}`, [
+        { arg: "afterDate", value: args.afterDate }
+      ]);
+    }
+    return this;
   }
 
   minLength() {
